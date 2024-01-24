@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <title>Hernandez_Flores_Juan_Pablo</title>
+        <script>
+        </script>
+    </head>
+    
+    <body>
+        <script type="module">
+            import * as THREE from './JS/three.module.js';
+            import { OrbitControls } from './JS/OrbitControls.js';
+            import { GUI } from './JS/lil-gui.module.min.js';
+            import { VOXLoader, VOXMesh } from './JS/VOXLoader.js';
+
+            
+        //Crear scene/Definir Fondo
+        var scene = new THREE.Scene(); //Crear scene
+        var CTexturaFondo = new THREE.TextureLoader(); //Creamos Cargador
+        CTexturaFondo.crossOrigin = "Anonymous";
+        CTexturaFondo.load('./Recursos/Skybox.png', function (TexturaFondo) { //Cargamos Textura
+            scene.background = TexturaFondo; //Definimos Textura
+        });
+
+        //Crear camara
+        var Camara = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight);
+         Camara.position.set(0,-100,0);
+       
+        //Crear Render
+        var Render = new THREE.WebGLRenderer();
+            Render.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(Render.domElement);
+            Render.setPixelRatio(window.devicePixelRatio);
+            Render.shadowMap.enabled = true //Permite Sombras
+
+        //Controles Camara
+        var controles = new OrbitControls(Camara, Render.domElement);
+            controles.minDistance = 5;
+            controles.maxDistance = 300;
+
+        //Crear Luz
+        const luz = new THREE.AmbientLight(0xffffff);
+        luz.position.x=0;
+        luz.position.y=0;
+        luz.position.z=0;
+        scene.add(luz);
+    
+        //Codigo Voxel
+        const loader = new VOXLoader();
+        loader.load('./Recursos/PoliceBox.vox', (chunks) => {
+            chunks.forEach((chunk) => {
+                if (chunk.data) {
+                    const mesh = new VOXMesh(chunk);
+                    mesh.scale.set(.5, .5, .5);
+                    mesh.position.set(0, 0, 10);
+                    mesh.rotation.set(Math.PI / 2, 0, 0);
+                    scene.add(mesh);
+                }
+            });
+        });
+
+     //Codigo Piso
+        var Piso = new THREE.Mesh( new THREE.BoxGeometry(200,200,1),
+            new THREE.MeshStandardMaterial(
+                {map : new THREE.TextureLoader().load('Recursos/Pasto.jpg')}));
+        Piso.position.x = 0;
+        Piso.position.y = 0;
+        Piso.position.z = -35;
+        scene.add(Piso);
+
+        function Animacion(){//Animacion
+            requestAnimationFrame(Animacion);//Creamos el Frame
+            Render.render(scene,Camara);//Se crea Render
+        }
+        Animacion();
+        
+        </script>
+    </body>
+</html>
